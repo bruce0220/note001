@@ -1,0 +1,140 @@
+-- 同比 去年同期相比， 如果没有去年比前年，如果去年为0则可以比。
+create table new_table2(
+dt string,
+area string,
+saleroom int
+);
+
+insert into new_table2 values('2017-08-04', 'hd','4');
+
+insert into new_table2 values('2017-11-01', 'hd','5');
+insert into new_table2 values('2017-11-03', 'hd','0');
+
+insert into new_table2 values('2017-12-01', 'hd','10');
+insert into new_table2 values('2017-12-02', 'hd','12');
+insert into new_table2 values('2017-12-03', 'hd','0');
+insert into new_table2 values('2017-12-04', 'hd','8');
+
+insert into new_table2 values('2017-12-06', 'hd','12');
+
+
+insert into new_table2 values('2017-12-08', 'hd','12');
+-----------------------------------------------------
+insert into new_table2 values('2018-12-01', 'hd','30');
+insert into new_table2 values('2018-12-02', 'hd','0');
+insert into new_table2 values('2018-12-03', 'hd','13');
+
+insert into new_table2 values('2018-12-05', 'hd','15');
+
+insert into new_table2 values('2018-12-07', 'hd','16');
+-----------------------------------------------------
+insert into new_table2 values('2020-12-01', 'hd','30');
+
+
+insert into new_table2 values('2017-08-04', 'hd','4'),
+('2017-11-01', 'hd','5'),
+('2017-11-03', 'hd','0'),
+('2017-12-01', 'hd','10'),
+('2017-12-02', 'hd','12'),
+('2017-12-03', 'hd','0'),
+('2017-12-04', 'hd','8'),
+('2017-12-06', 'hd','12'),
+('2017-12-08', 'hd','12'),
+('2018-12-01', 'hd','30'),
+('2018-12-02', 'hd','0'),
+('2018-12-03', 'hd','13'),
+('2018-12-05', 'hd','15'),
+('2018-12-07', 'hd','16'),
+('2020-12-01', 'hd','30');
+
+ 
+-- 同比 与去年同期比
+
+select 
+dt,
+area,
+saleroom,
+lag(saleroom,1,0) over(partition by concat(month(dt),"-",day(dt)),area order by dt asc) pre_sale
+from new_table2 ;
+
+select 
+dt,
+area,
+saleroom,
+lag(saleroom,1,0) over(partition by concat(month(dt),"-",day(dt)),area order by dt asc) pre_sale
+from new_table2 order by dt asc;
+
+with tmp as (
+select 
+dt,
+area,
+saleroom,
+lag(saleroom,1,0) over(partition by concat(month(dt),"-",day(dt)),area order by dt asc) pre_sale
+from new_table2
+ order by dt asc
+)
+select 
+dt,area,saleroom,pre_sale,
+if(saleroom == 0 and pre_sale == 0, 0, if(round((saleroom-pre_sale)/abs(pre_sale)*1.00,2) is null,100,round((saleroom-pre_sale)/abs(pre_sale)*1.00,2)*100) )
+from tmp;
+
+ 
+select 
+dt,area,saleroom,pre_sale,
+if(saleroom == 0 and pre_sale == 0, 0, if(round((saleroom-pre_sale)/abs(pre_sale)*1.00,2) is null,100,round((saleroom-pre_sale)/abs(pre_sale)*1.00,2)*100) )
+from (
+  select 
+  dt,
+  area,
+  saleroom,
+  lag(saleroom,1,0) over(partition by concat(month(dt),"-",day(dt)),area order by dt asc) pre_sale
+  from new_table2
+  order by dt asc
+) tmp;
+
+-- 环比 本月与上月比
+with tmp as (
+ select 
+ dt,
+ area,
+ saleroom,
+ lag(saleroom,1,0) over(partition by day(dt),area order by dt asc) pre_sale
+ from new_table2  
+)
+select 
+dt,area,saleroom,pre_sale,
+if(saleroom == 0 and pre_sale == 0, 0, if(round((saleroom-pre_sale)/abs(pre_sale)*1.00,2) is null,100,round((saleroom-pre_sale)/abs(pre_sale)*1.00,2)*100) )
+from tmp;
+
+
+-- 今天与昨天比
+select 
+dt,
+area,
+saleroom,
+lag(saleroom,1,0) over(partition by area order by dt asc) pre_sale
+from new_table2 order by dt asc;
+
+select 
+dt,
+area,
+saleroom,
+sum(saleroom) over(partition by area order by dt asc ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW) sum_sales
+from new_table2 ;
+
+
+with tmp as (
+ select 
+ dt,
+ area,
+ saleroom,
+ lag(saleroom,1,0) over(partition by area order by dt asc) pre_sale
+ from new_table2  
+)
+select 
+dt,area,saleroom,pre_sale,
+if(saleroom == 0 and pre_sale == 0, 0, if(round((saleroom-pre_sale)/abs(pre_sale)*1.00,2) is null,100,round((saleroom-pre_sale)/abs(pre_sale)*1.00,2)*100) )
+from tmp;
+
+
+
