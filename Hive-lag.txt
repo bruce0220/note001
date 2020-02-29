@@ -136,5 +136,5 @@ dt,area,saleroom,pre_sale,
 if(saleroom == 0 and pre_sale == 0, 0, if(round((saleroom-pre_sale)/abs(pre_sale)*1.00,2) is null,100,round((saleroom-pre_sale)/abs(pre_sale)*1.00,2)*100) )
 from tmp;
 
-
+ select date_add(dt, row_number() over() ) from (select explode(split(repeat('2020-02-01,',300), ',')) as dt) a where length(dt)>0
 
