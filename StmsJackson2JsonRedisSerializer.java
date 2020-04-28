@@ -12,6 +12,15 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
+
+
+
+
+   ParserConfig.getGlobalInstance().addAccept("com.sf.stms.");
+
+   String parse = JSON.toJSONString(obj, SerializerFeature.WriteClassName);
+           Object o = JSON.parseObject(parse, new TypeReference<Object>() {
+	           });
  */
 package com.sf.stms.server.cache;
 
